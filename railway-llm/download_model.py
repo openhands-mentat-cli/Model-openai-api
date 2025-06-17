@@ -35,8 +35,8 @@ def main():
     
     # Phi-3-mini 128k Q4_K_M model - good balance of quality/size for 8GB RAM
     model_info = {
-        "repo_id": "microsoft/Phi-3-mini-128k-instruct-gguf",
-        "filename": "Phi-3-mini-128k-instruct-q4.gguf",
+        "repo_id": "eccheng/Phi-3-mini-128k-instruct-Q4_0-GGUF",
+        "filename": "phi-3-mini-128k-instruct-q4_0.gguf",
         "local_filename": "phi-3-mini-128k-q4.gguf"
     }
     
