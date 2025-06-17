@@ -6,12 +6,12 @@ ENV PYTHONUNBUFFERED=1
 ENV CMAKE_ARGS="-DLLAMA_BLAS=ON -DLLAMA_BLAS_VENDOR=OpenBLAS"
 ENV FORCE_CMAKE=1
 
-# Install system dependencies
+# Install system dependencies including ninja for llama-cpp-python compilation
 RUN apt-get update && apt-get install -y \
     python3 python3-pip python3-dev \
-    build-essential cmake pkg-config \
+    build-essential cmake pkg-config ninja-build \
     libopenblas-dev liblapack-dev \
-    git wget curl \
+    git wget curl gcc g++ \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
@@ -22,6 +22,9 @@ COPY railway-llm/ .
 
 # Copy the frontend files
 COPY frontend/ ./frontend/
+
+# Upgrade pip and setuptools first
+RUN pip3 install --upgrade pip setuptools wheel
 
 # Install Python dependencies
 RUN pip3 install --no-cache-dir -r requirements.txt
