@@ -50,7 +50,7 @@ fi
 echo "🚀 Starting llama-cpp-python server with frontend..."
 
 # Set API key for authentication
-export API_KEY="$$Hello1$$"
+export API_KEY='$$Hello1$$'
 
 echo "🔐 API Key authentication enabled"
 echo "   API Key: $$Hello1$$"
@@ -64,7 +64,6 @@ exec python3 -m llama_cpp.server \
     --n_batch "$N_BATCH" \
     --n_ctx "$N_CTX" \
     --n_gpu_layers "$N_GPU_LAYERS" \
-    --verbose \
     --chat_format "chatml" \
     --interrupt_requests \
     --static_folder "./frontend" \
