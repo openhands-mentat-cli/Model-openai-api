@@ -1,0 +1,14 @@
+[build]
+builder = "dockerfile"
+
+[deploy]
+startCommand = "/app/start.sh"
+healthcheckPath = "/api/tags"
+healthcheckTimeout = 300
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 10
+
+[variables]
+PORT = "11434"
+OLLAMA_HOST = "0.0.0.0:11434"
+OLLAMA_ORIGINS = "*"
