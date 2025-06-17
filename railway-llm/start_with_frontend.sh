@@ -68,5 +68,5 @@ exec python3 -m llama_cpp.server \
     --chat_format "chatml" \
     --interrupt_requests \
     --static_folder "./frontend" \
-    --static_url_path "/frontend" \
+    --static_url_path "/" \
     --api_key "$API_KEY"
