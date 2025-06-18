@@ -49,10 +49,10 @@ fi
 echo "🚀 Starting llama-cpp-python server..."
 
 # Set API key for authentication
-export API_KEY='$$Hello1$$'
+export API_KEY='Hello1'
 
 echo "🔐 API Key authentication enabled"
-echo "   API Key: $$Hello1$$"
+echo "   API Key: Hello1"
 
 # Start the OpenAI-compatible API server with optimizations
 exec python3 -m llama_cpp.server \
@@ -64,5 +64,5 @@ exec python3 -m llama_cpp.server \
     --n_ctx "$N_CTX" \
     --n_gpu_layers "$N_GPU_LAYERS" \
     --chat_format "chatml" \
-    --interrupt_requests \
+    --interrupt_requests true \
     --api_key "$API_KEY"
