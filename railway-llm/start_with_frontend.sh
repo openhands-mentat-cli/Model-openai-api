@@ -47,7 +47,7 @@ if command -v free >/dev/null 2>&1; then
     free -h
 fi
 
-echo "🚀 Starting llama-cpp-python server with frontend..."
+echo "🚀 Starting integrated frontend server with llama-cpp-python backend..."
 
 # Set API key for authentication
 export API_KEY='Hello1'
@@ -55,17 +55,5 @@ export API_KEY='Hello1'
 echo "🔐 API Key authentication enabled"
 echo "   API Key: Hello1"
 
-# Start the OpenAI-compatible API server with optimizations and frontend
-exec python3 -m llama_cpp.server \
-    --model "$MODEL_PATH" \
-    --host "$HOST" \
-    --port "$PORT" \
-    --n_threads "$N_THREADS" \
-    --n_batch "$N_BATCH" \
-    --n_ctx "$N_CTX" \
-    --n_gpu_layers "$N_GPU_LAYERS" \
-    --chat_format "chatml" \
-    --interrupt_requests true \
-    --static_folder "./frontend" \
-    --static_url_path "/" \
-    --api_key "$API_KEY"
+# Start the integrated frontend server that manages llama-cpp-python internally
+exec python3 frontend_server.py

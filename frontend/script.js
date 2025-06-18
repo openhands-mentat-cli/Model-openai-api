@@ -75,7 +75,7 @@ async function sendMessage() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer $$Hello1$$',
+                'Authorization': 'Bearer Hello1',
             },
             body: JSON.stringify({
                 model: 'phi-3-mini-128k',
@@ -214,7 +214,7 @@ async function testAPI() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer $$Hello1$$',
+                'Authorization': 'Bearer Hello1',
             },
             body: JSON.stringify({
                 model: 'phi-3-mini-128k',
@@ -273,7 +273,7 @@ async function loadModels() {
     try {
         const response = await fetch('/v1/models', {
             headers: {
-                'Authorization': 'Bearer $$Hello1$$'
+                'Authorization': 'Bearer Hello1'
             }
         });
         
