@@ -48,32 +48,94 @@ async def start_llama_server():
         "--n_ctx", str(N_CTX),
         "--n_gpu_layers", str(N_GPU_LAYERS),
         "--chat_format", "chatml",
-        "--interrupt_requests", "true",
         "--api_key", API_KEY
     ]
     
-    # Start the process
+    print(f"📝 Command: {' '.join(cmd)}")
+    
+    # Start the process with real-time output
     llama_process = subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
-        universal_newlines=True
+        universal_newlines=True,
+        bufsize=1
     )
     
-    # Wait for the server to start
+    # Wait for the server to start with better error handling
     print("⏳ Waiting for llama-cpp-python server to start...")
-    for i in range(60):  # Wait up to 60 seconds
+    
+    # Start a task to read and print output
+    async def read_output():
+        while llama_process.poll() is None:
+            try:
+                line = llama_process.stdout.readline()
+                if line:
+                    print(f"[llama-cpp] {line.strip()}")
+            except:
+                break
+            await asyncio.sleep(0.1)
+    
+    output_task = asyncio.create_task(read_output())
+    
+    # Wait up to 180 seconds (3 minutes) for large models
+    for i in range(180):
+        # Check if process died
+        if llama_process.poll() is not None:
+            output_task.cancel()
+            returncode = llama_process.returncode
+            print(f"❌ llama-cpp-python process exited with code {returncode}")
+            
+            # Try to get any remaining output
+            try:
+                remaining_output = llama_process.stdout.read()
+                if remaining_output:
+                    print(f"[llama-cpp] {remaining_output}")
+            except:
+                pass
+            
+            raise Exception(f"llama-cpp-python server process exited with code {returncode}")
+        
+        # Try health check first, then fallback to models endpoint
         try:
             async with httpx.AsyncClient() as client:
-                response = await client.get(f"http://127.0.0.1:{API_PORT}/health", timeout=5.0)
-                if response.status_code == 200:
-                    print("✅ llama-cpp-python server is ready!")
-                    return
-        except:
-            pass
+                # Try health endpoint first
+                try:
+                    response = await client.get(f"http://127.0.0.1:{API_PORT}/health", timeout=5.0)
+                    if response.status_code == 200:
+                        print("✅ llama-cpp-python server is ready! (health check)")
+                        output_task.cancel()
+                        return
+                except:
+                    # Health endpoint might not exist, try models endpoint
+                    response = await client.get(
+                        f"http://127.0.0.1:{API_PORT}/v1/models", 
+                        headers={"Authorization": f"Bearer {API_KEY}"},
+                        timeout=5.0
+                    )
+                    if response.status_code == 200:
+                        print("✅ llama-cpp-python server is ready! (models endpoint)")
+                        output_task.cancel()
+                        return
+        except Exception as e:
+            # Only print connection errors every 30 seconds to avoid spam
+            if i % 30 == 0 and i > 0:
+                print(f"⏳ Still waiting... (attempt {i}/180) - {str(e)}")
+        
         await asyncio.sleep(1)
     
-    raise Exception("Failed to start llama-cpp-python server")
+    output_task.cancel()
+    
+    # If we get here, the server didn't start in time
+    if llama_process.poll() is None:
+        print("❌ Timeout waiting for llama-cpp-python server to start")
+        llama_process.terminate()
+        try:
+            llama_process.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            llama_process.kill()
+    
+    raise Exception("Failed to start llama-cpp-python server within timeout")
 
 async def stop_llama_server():
     """Stop the llama-cpp-python server."""
@@ -102,14 +164,14 @@ app = FastAPI(
 )
 
 # Mount static files
-frontend_path = Path(__file__).parent / "frontend"
+frontend_path = Path(__file__).parent.parent / "frontend"  # Go up one level to /app/frontend
 if frontend_path.exists():
     app.mount("/static", StaticFiles(directory=str(frontend_path)), name="static")
 
 @app.get("/")
 async def serve_frontend():
     """Serve the main frontend page."""
-    frontend_file = Path(__file__).parent / "frontend" / "index.html"
+    frontend_file = Path(__file__).parent.parent / "frontend" / "index.html"  # Go up one level to /app/frontend
     if frontend_file.exists():
         return FileResponse(str(frontend_file))
     else:
@@ -120,10 +182,26 @@ async def health_check():
     """Health check endpoint."""
     try:
         async with httpx.AsyncClient() as client:
-            response = await client.get(f"http://127.0.0.1:{API_PORT}/health", timeout=5.0)
-            return {"status": "healthy", "llama_server": response.status_code == 200}
-    except:
-        return {"status": "unhealthy", "llama_server": False}
+            # Try health endpoint first
+            try:
+                response = await client.get(f"http://127.0.0.1:{API_PORT}/health", timeout=5.0)
+                if response.status_code == 200:
+                    return {"status": "healthy", "llama_server": True, "method": "health"}
+            except:
+                pass
+            
+            # Fallback to models endpoint
+            response = await client.get(
+                f"http://127.0.0.1:{API_PORT}/v1/models",
+                headers={"Authorization": f"Bearer {API_KEY}"},
+                timeout=5.0
+            )
+            if response.status_code == 200:
+                return {"status": "healthy", "llama_server": True, "method": "models"}
+            else:
+                return {"status": "unhealthy", "llama_server": False, "error": f"HTTP {response.status_code}"}
+    except Exception as e:
+        return {"status": "unhealthy", "llama_server": False, "error": str(e)}
 
 @app.api_route("/v1/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
 async def proxy_to_llama(request: Request, path: str):

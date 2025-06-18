@@ -64,5 +64,4 @@ exec python3 -m llama_cpp.server \
     --n_ctx "$N_CTX" \
     --n_gpu_layers "$N_GPU_LAYERS" \
     --chat_format "chatml" \
-    --interrupt_requests true \
     --api_key "$API_KEY"
