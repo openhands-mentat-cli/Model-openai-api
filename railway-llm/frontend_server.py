@@ -48,7 +48,6 @@ async def start_llama_server():
         "--n_ctx", str(N_CTX),
         "--n_gpu_layers", str(N_GPU_LAYERS),
         "--chat_format", "chatml",
-        "--interrupt_requests", "true",
         "--api_key", API_KEY
     ]
     
