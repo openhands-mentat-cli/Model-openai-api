@@ -1,14 +1,14 @@
 # Core dependencies for llama.cpp with optimizations
-# Use a more stable version that builds reliably
-llama-cpp-python[server]==0.2.28
-fastapi==0.110.0
-uvicorn[standard]==0.27.1
-pydantic==2.6.1
-requests==2.31.0
-huggingface-hub==0.20.3
+# Use version that supports Phi-3 models (added in 0.2.90+)
+llama-cpp-python[server]==0.3.2
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.1
+pydantic>=2.6.1
+requests>=2.31.0
+huggingface-hub>=0.20.3
 
 # Frontend server dependencies
-httpx==0.26.0
+httpx>=0.26.0
 
 # Build dependencies to ensure compilation works
 cmake>=3.22.0
