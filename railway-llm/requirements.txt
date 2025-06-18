@@ -7,6 +7,9 @@ pydantic==2.6.1
 requests==2.31.0
 huggingface-hub==0.20.3
 
+# Frontend server dependencies
+httpx==0.26.0
+
 # Build dependencies to ensure compilation works
 cmake>=3.22.0
 scikit-build-core>=0.5.0
