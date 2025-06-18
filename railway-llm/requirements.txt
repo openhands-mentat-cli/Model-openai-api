@@ -1,6 +1,6 @@
 # Core dependencies for llama.cpp with optimizations
-# Use version that supports Phi-3 models (added in 0.2.90+)
-llama-cpp-python[server]==0.3.2
+# Use latest stable version with Phi-3 support
+llama-cpp-python[server]>=0.3.2
 fastapi>=0.110.0
 uvicorn[standard]>=0.27.1
 pydantic>=2.6.1
